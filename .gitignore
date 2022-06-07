@@ -1,1 +1,5 @@
 node_modules
+.env
+src/firebase/apinodekey.json
+src/firebase/stuff.ts
+dist
