@@ -1,29 +1,28 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
-const admin = require("firebase-admin");
 import auth from './routes/auth'
 import gmail from './routes/gmail'
 import { initFirebase } from './firebase/firebaseInit';
 import { getToken } from './firebase/getToken';
 
 
-
-const PORT=4000;    
-
+   
 const startServer=async()=>
 {
     
     dotenv.config();
-    
+    const port = process.env.PORT;
+    const myemail = process.env.MY_EMAIL;
+
     const app: Express = express();
     app.set("view engine", "ejs");
-    
-    const port = process.env.PORT?process.env.PORT:PORT;
     initFirebase()
 
+
+    //home route , checks if user is authenticated
     app.get('/', async(req: Request, res: Response) => {
       const emal =req.query.email as string
-      const email=emal?emal:"youremail@gmail.com"
+      const email=emal?emal:myemail as string
       const user = getToken(email)
       if(!user){
        res.redirect('/auth/google')   
@@ -38,7 +37,7 @@ const startServer=async()=>
     app.use('/gmail',gmail)
     
     app.listen(port, () => {
-      console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
+      console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
     });
 }
 startServer().catch(e=>console.log("error strating server======== ",e))
