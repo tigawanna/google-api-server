@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { checkRefreshToken } from './../firebase/checkRefreshToken';
+import { getToken } from '../firebase/getToken';
 const { google } = require("googleapis");
 const nodemailer = require("nodemailer");
 
@@ -18,46 +18,7 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.REDIRECT_URI
 );
 
-const scopes = [
-  "https://www.googleapis.com/auth/userinfo.email",
-   "https://www.googleapis.com/auth/calendar.events",
-    "https://www.googleapis.com/auth/gmail.compose",
-    "https://www.googleapis.com/auth/documents",
-    "https://www.googleapis.com/auth/spreadsheets"
-  ];
-  
-  const sendMail = async () => {
-    try {
-      // Create the email envelope (transport)
-      const transport = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          type: "OAuth2",
-          user: process.env.MY_EMAIL,
-          clientId: process.env.CLIENT_ID,
-          clientSecret: process.env.CLIENT_SECRET,
-          accessToken:process.env.MY_EMAIL,
-        },
-      });
-  
-      // Create the email options and body
-      // ('email': user's email and 'name': is the e-book the user wants to receive)
-      const mailOptions = {
-        from: `FRONT <${my_email}>`,
-        to: "email2@gmail.com",
-        subject: `[FRONT]- Here is your e-Book!`,
-        html: `Enjoy learning!`,
-      };
-  
-      // Set up the email options and delivering it
-      const result = await transport.sendMail(mailOptions);
-      console.log("success    === ", result);
-      return result;
-    } catch (error) {
-      console.log("error sendng mail    === ", error);
-      return error;
-    }
-  };
+
 
 
 router.get('/', (req: Request, res: Response) => {
@@ -67,9 +28,55 @@ res.render("welcome");
 
 //route to handle api client authentication
 router.get("/send", async (req: Request, res: Response) => {
+ const emal =req.query.email as string
+  const email=emal?emal:process.env.MY_EMAIL as string
+  const user = getToken(email)
+  if(!user){
+   res.redirect('/auth/google')   
+  }else{
+    user.then(async(res)=>{
+    try{
+     console.log("res === ",res)
+      await oauth2Client.setCredentials({
+        refresh_token:res.refresh_token
+      }); 
 
-  checkRefreshToken({email:"denniskinuthiaw@gmail.com",res})
-  res.render("welcome");
+      const myAccessToken = await oauth2Client.getAccessToken()
+      console.log("my access token ====  ",myAccessToken.res.data.access_token)
+      console.log("client envs ====   ",process.env.CLIENT_SECRET)
+
+      // const transport = nodemailer.createTransport({
+      //   service: "gmail",
+      //   auth: {
+      //     type: "OAuth2",
+      //     user:res.email,
+      //     clientId: process.env.CLIENT_ID,
+      //     clientSecret: process.env.CLIENT_SECRET,
+      //     accessToken:myAccessToken.res.data.access_token,
+      //     refreshToken:res.refresh_token,
+      //   },
+      // });
+
+      // const mailOptions = {
+      //   from: `FRONT <${res.emaill}>`,
+      //   to: "kinuthiawdennis@gmail.com",
+      //   subject: `[FRONT]- Here is your e-Book!`,
+      //   html: `Enjoy learning!`,
+      // };
+  
+      // // Set up the email options and delivering it
+      // const result = await transport.sendMail(mailOptions);
+      // console.log("success    === ", result);
+
+     }catch(err){
+     console.log("send mail error ==== ",err)
+     }
+
+    })
+ 
+  res.send("authenticated")
+  }
+ console.log("user in database ", user)
 
 
 });

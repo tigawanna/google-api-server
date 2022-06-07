@@ -4,7 +4,7 @@ import auth from './routes/auth'
 import gmail from './routes/gmail'
 import { initFirebase } from './firebase/firebaseInit';
 import { getToken } from './firebase/getToken';
-
+const { createClient } =require('ioredis');
 
    
 const startServer=async()=>
@@ -15,6 +15,10 @@ const startServer=async()=>
     const myemail = process.env.MY_EMAIL;
 
     const app: Express = express();
+    
+    const client = createClient();
+    client.on('error', (err:any) => console.log('Redis Client Error', err));
+
     app.set("view engine", "ejs");
     initFirebase()
 

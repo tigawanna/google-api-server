@@ -4,8 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const saveToRedis_1 = require("./../firebase/saveToRedis");
 var admin = require("firebase-admin");
 const { google } = require("googleapis");
+const { createClient } = require('ioredis');
 require('dotenv').config();
 const router = express_1.default.Router();
 const oauth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URL);
@@ -39,6 +41,8 @@ router.get("/google", async (req, res) => {
     }
 });
 router.get("/creds", async (req, res) => {
+    const client = createClient();
+    client.on('error', (err) => console.log('Redis Client Error', err));
     const code = req.query.code;
     const db = admin.firestore();
     try {
@@ -56,11 +60,17 @@ router.get("/creds", async (req, res) => {
                 const email = res.data.email;
                 const refresh_token = tokens === null || tokens === void 0 ? void 0 : tokens.refresh_token;
                 console.log("found user ==== ", res.data.email);
+                console.log("refresh token retrieved ==== ", refresh_token);
                 console.log("email exists ,saving .....");
                 const usersCollection = db.collection('users');
-                usersCollection.doc(email).set({ email, refresh_token }, { merge: true })
-                    .then((res) => { console.log("success saving token", res); })
-                    .catch((err) => { console.log("error saving token == ", err); });
+                if (tokens.refresh_token) {
+                    console.log(tokens.refresh_token);
+                    usersCollection.doc(email).set({ email, refresh_token }, { merge: true })
+                        .then((res) => { console.log("success saving token to firebase", res); })
+                        .catch((err) => { console.log("error saving token == ", err); });
+                    (0, saveToRedis_1.saveToRediis)(email, tokens.refresh_token);
+                }
+                console.log("all tokens ==== ", tokens);
             }
         });
     }

@@ -1,6 +1,9 @@
 import express, { Request, Response } from 'express';
+import { saveToRediis } from './../firebase/saveToRedis';
+import { checkRefreshToken } from './../firebase/checkRefreshToken';
 var admin = require("firebase-admin");
 const { google } = require("googleapis");
+const { createClient } =require('ioredis');
 
 require('dotenv').config();
 const router = express.Router();
@@ -61,6 +64,9 @@ router.get("/google", async (req: Request, res: Response) => {
 
 
 router.get("/creds", async (req, res) => {
+
+const client = createClient();
+client.on('error', (err:any) => console.log('Redis Client Error', err));    
 const code = req.query.code;
 const db = admin.firestore();
 try{
@@ -81,12 +87,22 @@ await oauth2.userinfo.get(
      const email=res.data.email
      const refresh_token = tokens?.refresh_token
       console.log("found user ==== ",res.data.email);
+      console.log("refresh token retrieved ==== ",refresh_token)
       console.log("email exists ,saving .....")
       const usersCollection = db.collection('users');
-       usersCollection.doc(email).set({ email, refresh_token }, { merge: true })
-       .then((res:any)=>{console.log("success saving token",res)})
-       .catch((err:any)=>{console.log("error saving token == ",err)}) 
-    }
+
+    if (tokens.refresh_token) {
+          // store the refresh_token in my database!
+          console.log(tokens.refresh_token);
+          usersCollection.doc(email).set({ email, refresh_token }, { merge: true })
+          .then((res:any)=>{console.log("success saving token to firebase",res)})
+          .catch((err:any)=>{console.log("error saving token == ",err)}) 
+          saveToRediis(email,tokens.refresh_token)
+        }
+        console.log("all tokens ==== ",tokens);
+
+     
+        }
 });
 
 }catch(err){
