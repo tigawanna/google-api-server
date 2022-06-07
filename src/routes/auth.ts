@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { saveToRediis } from './../firebase/saveToRedis';
-import { checkRefreshToken } from './../firebase/checkRefreshToken';
+import { getToken } from '../firebase/getToken';
 var admin = require("firebase-admin");
 const { google } = require("googleapis");
 const { createClient } =require('ioredis');
@@ -23,13 +23,14 @@ const scopes = [
   ];
   
 router.get('/', (req: Request, res: Response) => {
+
 res.render("welcome");
+getToken("denniskinuthiaw@gmail.com")
     
 });
 
 
-
-
+  
 
 //route to check client authentication
 router.get("/check", async (req: Request, res: Response) => {

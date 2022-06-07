@@ -38,7 +38,7 @@ router.get("/send", async (req: Request, res: Response) => {
     try{
      console.log("res === ",res)
       await oauth2Client.setCredentials({
-        refresh_token:res.refresh_token
+        refresh_token:res?.refresh_token
       }); 
 
       const myAccessToken = await oauth2Client.getAccessToken()
