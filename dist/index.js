@@ -9,6 +9,7 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const gmail_1 = __importDefault(require("./routes/gmail"));
 const firebaseInit_1 = require("./firebase/firebaseInit");
 const getToken_1 = require("./firebase/getToken");
+const getToken2_1 = require("./firebase/getToken2");
 const { createClient } = require('ioredis');
 const startServer = async () => {
     dotenv_1.default.config();
@@ -30,6 +31,12 @@ const startServer = async () => {
             res.send("authenticated");
         }
         console.log("user in database ", user);
+    });
+    app.get('/test', async (req, res) => {
+        const token = (0, getToken2_1.getToken2)("denniskinuthiaw@gmail.com")
+            .then((result) => {
+            console.log("token promis returned in index === ", result);
+        });
     });
     app.use('/auth', auth_1.default);
     app.use('/gmail', gmail_1.default);

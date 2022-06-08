@@ -1,6 +1,6 @@
 const { createClient } =require('ioredis');
 
-export const saveToRediis=(email:string,refresh_token:string)=>{
+export const saveToRediis=(email:string,refresh_token:string):any=>{
  const client = createClient();
  client.on('error', (err:any) => console.log('Redis Client Error', err));  
 
@@ -25,4 +25,5 @@ export const saveToRediis=(email:string,refresh_token:string)=>{
             console.log("savving new token to redis",reply,err);}); 
           }
         });
+      
 }

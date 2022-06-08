@@ -4,6 +4,7 @@ import auth from './routes/auth'
 import gmail from './routes/gmail'
 import { initFirebase } from './firebase/firebaseInit';
 import { getToken } from './firebase/getToken';
+import { getToken2 } from './firebase/getToken2';
 const { createClient } =require('ioredis');
 
    
@@ -15,7 +16,7 @@ const startServer=async()=>
     const myemail = process.env.MY_EMAIL;
 
     const app: Express = express();
-    
+
     const client = createClient();
     client.on('error', (err:any) => console.log('Redis Client Error', err));
 
@@ -34,6 +35,19 @@ const startServer=async()=>
       res.send("authenticated")
       }
      console.log("user in database ", user)
+    });
+
+    //home route , checks if user is authenticated
+    app.get('/test', async(req: Request, res: Response) => {
+    
+      const token=getToken2("denniskinuthiaw@gmail.com")
+      .then((result)=>{
+        console.log("token promis returned in index === ",result)
+      })
+
+ 
+
+
     });
 
 

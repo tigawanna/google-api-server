@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const saveToRedis_1 = require("./../firebase/saveToRedis");
-const getToken_1 = require("../firebase/getToken");
 var admin = require("firebase-admin");
 const { google } = require("googleapis");
 const { createClient } = require('ioredis');
@@ -15,13 +14,12 @@ const oauth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.C
 const scopes = [
     "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/calendar.events",
-    "https://www.googleapis.com/auth/gmail.compose",
     "https://www.googleapis.com/auth/documents",
-    "https://www.googleapis.com/auth/spreadsheets"
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://mail.google.com/"
 ];
 router.get('/', (req, res) => {
     res.render("welcome");
-    (0, getToken_1.getToken)("denniskinuthiaw@gmail.com");
 });
 router.get("/check", async (req, res) => {
     const db = admin.firestore();

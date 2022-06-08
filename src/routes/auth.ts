@@ -17,15 +17,15 @@ const oauth2Client = new google.auth.OAuth2(
 const scopes = [
   "https://www.googleapis.com/auth/userinfo.email",
    "https://www.googleapis.com/auth/calendar.events",
-    "https://www.googleapis.com/auth/gmail.compose",
     "https://www.googleapis.com/auth/documents",
-    "https://www.googleapis.com/auth/spreadsheets"
+    "https://www.googleapis.com/auth/spreadsheets",
+     "https://mail.google.com/"
   ];
   
 router.get('/', (req: Request, res: Response) => {
 
 res.render("welcome");
-getToken("denniskinuthiaw@gmail.com")
+
     
 });
 
@@ -101,12 +101,10 @@ await oauth2.userinfo.get(
           saveToRediis(email,tokens.refresh_token)
         }
         console.log("all tokens ==== ",tokens);
-
-     
-        }
+      }
 });
-
-}catch(err){
+}
+catch(err){
   console.log("error in the creds block ==== ",err)
 }
 

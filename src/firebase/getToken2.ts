@@ -2,7 +2,7 @@ const admin = require("firebase-admin");
 import { saveToRediis } from './saveToRedis';
 const { createClient } =require('ioredis');
 
-export const getToken=async(email:string)=>{
+export const getToken2=async(email:string)=>{
 
 
 const client = createClient();
