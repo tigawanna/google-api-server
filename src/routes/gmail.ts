@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { getToken } from '../firebase/getToken';
+import { getRefreshToken } from './../firebase/tokenActions';
 const { google } = require("googleapis");
 const nodemailer = require("nodemailer");
 
@@ -30,7 +30,7 @@ res.render("welcome");
 router.get("/send", async (req: Request, res: Response) => {
  const emal =req.query.email as string
   const email=emal?emal:process.env.MY_EMAIL as string
-  const token = getToken(email)
+  const token = getRefreshToken(email)
   console.log("user  in send==== user ",token)  
   token.then(async(resToken)=>{
     if(!resToken){

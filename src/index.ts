@@ -3,10 +3,10 @@ import dotenv from 'dotenv';
 import auth from './routes/auth'
 import gmail from './routes/gmail'
 import { initFirebase } from './firebase/firebaseInit';
-import { getToken } from './firebase/getToken';
-import { getToken2 } from './firebase/getToken2';
+import { getRefreshToken, testFunction } from './firebase/tokenActions';
+import { getFire, saveFire } from './firebase/testFunctions';
 const { createClient } =require('ioredis');
-
+const admin = require("firebase-admin");
    
 const startServer=async()=>
 {
@@ -28,27 +28,34 @@ const startServer=async()=>
     app.get('/', async(req: Request, res: Response) => {
       const emal =req.query.email as string
       const email=emal?emal:myemail as string
-      const user = getToken(email)
-      if(!user){
-       res.redirect('/auth/google')   
-      }else{
-      res.send("authenticated")
-      }
-     console.log("user in database ", user)
+      const redistkn = await getRefreshToken(email)
+      console.log("redis token === ",redistkn)
+
+
     });
 
     //home route , checks if user is authenticated
     app.get('/test', async(req: Request, res: Response) => {
-    
-      const token=getToken2("denniskinuthiaw@gmail.com")
-      .then((result)=>{
-        console.log("token promis returned in index === ",result)
-      })
+      const email="denniskinuthiaw@gmail.com"
+      try{
+        const redtkn = await getRefreshToken("denniskinuthiaw@gmail.com")
+        console.log("redis token === ",redtkn)
+        if(!redtkn){
+          console.log("no token in , get one in firebase ")
+          const db = await admin.firestore();
+          const usersCollection = db.collection('users');
+          const fireToken=await usersCollection.doc(email).get()
+          console.log("firetoken in index",fireToken.data())
+          if(!fireToken.data()){
+          res.redirect('/auth/google')
+          }
+        }
+  
+      }catch(err){
+      console.log("redis token err n index=== ",err)
+      }
 
- 
-
-
-    });
+    })
 
 
     app.use('/auth',auth)

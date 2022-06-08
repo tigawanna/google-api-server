@@ -8,9 +8,9 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const gmail_1 = __importDefault(require("./routes/gmail"));
 const firebaseInit_1 = require("./firebase/firebaseInit");
-const getToken_1 = require("./firebase/getToken");
-const getToken2_1 = require("./firebase/getToken2");
+const tokenActions_1 = require("./firebase/tokenActions");
 const { createClient } = require('ioredis');
+const admin = require("firebase-admin");
 const startServer = async () => {
     dotenv_1.default.config();
     const port = process.env.PORT;
@@ -23,20 +23,28 @@ const startServer = async () => {
     app.get('/', async (req, res) => {
         const emal = req.query.email;
         const email = emal ? emal : myemail;
-        const user = (0, getToken_1.getToken)(email);
-        if (!user) {
-            res.redirect('/auth/google');
-        }
-        else {
-            res.send("authenticated");
-        }
-        console.log("user in database ", user);
+        const redistkn = await (0, tokenActions_1.getRefreshToken)(email);
+        console.log("redis token === ", redistkn);
     });
     app.get('/test', async (req, res) => {
-        const token = (0, getToken2_1.getToken2)("denniskinuthiaw@gmail.com")
-            .then((result) => {
-            console.log("token promis returned in index === ", result);
-        });
+        const email = "denniskinuthiaw@gmail.com";
+        try {
+            const redtkn = await (0, tokenActions_1.getRefreshToken)("denniskinuthiaw@gmail.com");
+            console.log("redis token === ", redtkn);
+            if (!redtkn) {
+                console.log("no token in , get one in firebase ");
+                const db = await admin.firestore();
+                const usersCollection = db.collection('users');
+                const fireToken = await usersCollection.doc(email).get();
+                console.log("firetoken in index", fireToken.data());
+                if (!fireToken.data()) {
+                    res.redirect('/auth/google');
+                }
+            }
+        }
+        catch (err) {
+            console.log("redis token err n index=== ", err);
+        }
     });
     app.use('/auth', auth_1.default);
     app.use('/gmail', gmail_1.default);

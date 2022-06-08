@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const saveToRedis_1 = require("./../firebase/saveToRedis");
+const tokenActions_1 = require("../firebase/tokenActions");
 var admin = require("firebase-admin");
 const { google } = require("googleapis");
 const { createClient } = require('ioredis');
@@ -63,12 +63,14 @@ router.get("/creds", async (req, res) => {
                 console.log("refresh token retrieved ==== ", refresh_token);
                 console.log("email exists ,saving .....");
                 const usersCollection = db.collection('users');
+                console.log("response token ==== ", tokens.refresh_token);
                 if (tokens.refresh_token) {
+                    console.log("refresh token in response ,saving it");
                     console.log(tokens.refresh_token);
                     usersCollection.doc(email).set({ email, refresh_token }, { merge: true })
                         .then((res) => { console.log("success saving token to firebase", res); })
                         .catch((err) => { console.log("error saving token == ", err); });
-                    (0, saveToRedis_1.saveToRediis)(email, tokens.refresh_token);
+                    (0, tokenActions_1.saveRefreshToRedis)(email, tokens.refresh_token);
                 }
                 console.log("all tokens ==== ", tokens);
             }

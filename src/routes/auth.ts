@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
-import { saveToRediis } from './../firebase/saveToRedis';
-import { getToken } from '../firebase/getToken';
+import { saveRefreshToRedis } from '../firebase/tokenActions';
 var admin = require("firebase-admin");
 const { google } = require("googleapis");
 const { createClient } =require('ioredis');
@@ -91,14 +90,15 @@ await oauth2.userinfo.get(
       console.log("refresh token retrieved ==== ",refresh_token)
       console.log("email exists ,saving .....")
       const usersCollection = db.collection('users');
-
+    console.log("response token ==== ",tokens.refresh_token)
     if (tokens.refresh_token) {
           // store the refresh_token in my database!
+          console.log("refresh token in response ,saving it")
           console.log(tokens.refresh_token);
           usersCollection.doc(email).set({ email, refresh_token }, { merge: true })
           .then((res:any)=>{console.log("success saving token to firebase",res)})
           .catch((err:any)=>{console.log("error saving token == ",err)}) 
-          saveToRediis(email,tokens.refresh_token)
+          saveRefreshToRedis(email,tokens.refresh_token)
         }
         console.log("all tokens ==== ",tokens);
       }
