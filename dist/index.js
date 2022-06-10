@@ -9,7 +9,7 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const gmail_1 = __importDefault(require("./routes/gmail"));
 const firebaseInit_1 = require("./firebase/firebaseInit");
 const tokenActions_1 = require("./firebase/tokenActions");
-const getTheToken_1 = require("./middleware/getTheToken");
+const initialChecks_1 = require("./middleware/initialChecks");
 const { createClient } = require('ioredis');
 const admin = require("firebase-admin");
 const startServer = async () => {
@@ -21,17 +21,8 @@ const startServer = async () => {
     client.on('error', (err) => console.log('Redis Client Error', err));
     app.set("view engine", "ejs");
     (0, firebaseInit_1.initFirebase)();
-    app.get("/", (req, res, next) => {
-        (0, getTheToken_1.authenticate)(getTheToken_1.scopes)
-            .then(client => {
-            console.log("authenticated client   ===  ", client);
-        })
-            .catch(console.error);
-    }, (req, res) => {
-        res.send(`<div>
-    <h2>Welcome to GeeksforGeeks</h2>
-    <h5>Tutorial on Middleware</h5>
-  </div>`);
+    app.get('/', initialChecks_1.initChecks, async (req, res, next) => {
+        res.send("good");
     });
     app.get('/test', async (req, res) => {
         const email = "denniskinuthiaw@gmail.com";

@@ -4,8 +4,7 @@ import auth from './routes/auth'
 import gmail from './routes/gmail'
 import { initFirebase } from './firebase/firebaseInit';
 import { getRefreshTokenFromRedis, testFunction } from './firebase/tokenActions';
-import { getFire, saveFire } from './firebase/testFunctions';
-import { authenticate, runSample, scopes} from './middleware/getTheToken';
+import { initChecks} from './middleware/initialChecks';
 const { createClient } =require('ioredis');
 const admin = require("firebase-admin");
    
@@ -26,23 +25,10 @@ const startServer=async()=>
 
 
     //home route , checks if user is authenticated
- 
-app.get(
-  "/",(req:Request,res:Response,next:NextFunction)=>{
-      authenticate(scopes)
-     .then(client =>{
-        console.log("authenticated client   ===  ",client)
-    
-    })
-    .catch(console.error);
-  },
-  (req:Request, res:Response) => {
-    res.send(`<div>
-    <h2>Welcome to GeeksforGeeks</h2>
-    <h5>Tutorial on Middleware</h5>
-  </div>`);
-  }
-);
+   app.get('/', initChecks,
+   async(req: Request, res: Response, next: NextFunction)=>{
+    res.send("good")
+  });
 
     //home route , checks if user is authenticated
     app.get('/test', async(req: Request, res: Response) => {

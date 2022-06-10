@@ -46,7 +46,8 @@ export const getAccessToken=async(refresh:string,access:string)=>{
 //      //get it  it from firebase    
 //      const db = await admin.firestore();
 //      const usersCollection = db.collection('users');
-//      await usersCollection.doc(email).get().then((user:any)=>{
+//      await usersCollection.doc(email).get()
+//.then((user:any)=>{
 //     if(user.data()?.refresh_token){
 //         const refresh_token=user.data()?.refresh_token
 //         console.log("refresh token from firebase",user.data().refresh_token)

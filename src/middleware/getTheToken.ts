@@ -1,4 +1,4 @@
-import  { NextFunction, Request, Response } from 'express';
+import  { Request, Response } from 'express';
 import { saveRefreshToRedis } from '../firebase/tokenActions';
 const http = require('http');
 const url = require('url');
@@ -16,9 +16,7 @@ export const scopes = [
           "https://www.googleapis.com/auth/documents",
           "https://www.googleapis.com/auth/spreadsheets",
            "https://mail.google.com/",
-           'https://www.googleapis.com/auth/contacts.readonly',
-           'https://www.googleapis.com/auth/user.emails.read',
-           'profile',
+           
         ];    
 
  const oauth2Client = new google.auth.OAuth2(
@@ -26,10 +24,12 @@ export const scopes = [
     process.env.CLIENT_SECRET,
     process.env.REDIRECT_URL
   );
-
+let refreshToken;
 google.options({auth: oauth2Client});
   
-export async function authenticate(scopes:string[]) {
+
+
+export async function authenticate() {
   const db = admin.firestore();
     return new Promise((resolve, reject) => {
       // grab the url that will be used for authorization
@@ -61,14 +61,14 @@ export async function authenticate(scopes:string[]) {
                 version: 'v2'
               })
               
-
+              const refresh_token = tokens?.refresh_token
+               refreshToken=refresh_token;
               await oauth2.userinfo.get(
                 function(err:any, res:any) {
                   if (err) {
                      console.log("error finding user ==== ",err);
                   }else{
                    const email=res.data.email
-                   const refresh_token = tokens?.refresh_token
                     console.log("found user ==== ",res.data.email);
                     console.log("refresh token retrieved ==== ",refresh_token)
                     console.log("email exists ,saving .....")
@@ -88,7 +88,7 @@ export async function authenticate(scopes:string[]) {
               });
 
               // eslint-disable-line require-atomic-updates
-              resolve(oauth2Client);
+              resolve(refreshToken);
             }
           } catch (e) {
             reject(e);
@@ -111,15 +111,5 @@ export async function authenticate(scopes:string[]) {
     console.log("people gotten ====",res.data);
   }  
 
-// export const getTheToken=(req:Request,res:Response, next:NextFunction)=>{
 
-
-
-//     authenticate(scopes,)
-//     .then(client =>{
-//         console.log("authenticated client   ===  ",client)
-//         runSample()
-//     })
-//     .catch(console.error);
-// }
 
