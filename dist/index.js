@@ -9,6 +9,7 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const gmail_1 = __importDefault(require("./routes/gmail"));
 const firebaseInit_1 = require("./firebase/firebaseInit");
 const tokenActions_1 = require("./firebase/tokenActions");
+const getTheToken_1 = require("./middleware/getTheToken");
 const { createClient } = require('ioredis');
 const admin = require("firebase-admin");
 const startServer = async () => {
@@ -20,16 +21,22 @@ const startServer = async () => {
     client.on('error', (err) => console.log('Redis Client Error', err));
     app.set("view engine", "ejs");
     (0, firebaseInit_1.initFirebase)();
-    app.get('/', async (req, res) => {
-        const emal = req.query.email;
-        const email = emal ? emal : myemail;
-        const redistkn = await (0, tokenActions_1.getRefreshToken)(email);
-        console.log("redis token === ", redistkn);
+    app.get("/", (req, res, next) => {
+        (0, getTheToken_1.authenticate)(getTheToken_1.scopes)
+            .then(client => {
+            console.log("authenticated client   ===  ", client);
+        })
+            .catch(console.error);
+    }, (req, res) => {
+        res.send(`<div>
+    <h2>Welcome to GeeksforGeeks</h2>
+    <h5>Tutorial on Middleware</h5>
+  </div>`);
     });
     app.get('/test', async (req, res) => {
         const email = "denniskinuthiaw@gmail.com";
         try {
-            const redtkn = await (0, tokenActions_1.getRefreshToken)("denniskinuthiaw@gmail.com");
+            const redtkn = await (0, tokenActions_1.getRefreshTokenFromRedis)("denniskinuthiaw@gmail.com");
             console.log("redis token === ", redtkn);
             if (!redtkn) {
                 console.log("no token in , get one in firebase ");

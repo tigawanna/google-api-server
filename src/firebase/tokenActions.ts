@@ -80,7 +80,7 @@ export const testFunction=async(email:string)=>{
 
 
 
-export const getRefreshToken=async(email:string)=>{
+export const getRefreshTokenFromRedis=async(email:string)=>{
  return await client.get(email);
 }
 

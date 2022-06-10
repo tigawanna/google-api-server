@@ -1,10 +1,11 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, Request, Response,NextFunction } from 'express';
 import dotenv from 'dotenv';
 import auth from './routes/auth'
 import gmail from './routes/gmail'
 import { initFirebase } from './firebase/firebaseInit';
-import { getRefreshToken, testFunction } from './firebase/tokenActions';
+import { getRefreshTokenFromRedis, testFunction } from './firebase/tokenActions';
 import { getFire, saveFire } from './firebase/testFunctions';
+import { authenticate, runSample, scopes} from './middleware/getTheToken';
 const { createClient } =require('ioredis');
 const admin = require("firebase-admin");
    
@@ -25,20 +26,29 @@ const startServer=async()=>
 
 
     //home route , checks if user is authenticated
-    app.get('/', async(req: Request, res: Response) => {
-      const emal =req.query.email as string
-      const email=emal?emal:myemail as string
-      const redistkn = await getRefreshToken(email)
-      console.log("redis token === ",redistkn)
-
-
-    });
+ 
+app.get(
+  "/",(req:Request,res:Response,next:NextFunction)=>{
+      authenticate(scopes)
+     .then(client =>{
+        console.log("authenticated client   ===  ",client)
+    
+    })
+    .catch(console.error);
+  },
+  (req:Request, res:Response) => {
+    res.send(`<div>
+    <h2>Welcome to GeeksforGeeks</h2>
+    <h5>Tutorial on Middleware</h5>
+  </div>`);
+  }
+);
 
     //home route , checks if user is authenticated
     app.get('/test', async(req: Request, res: Response) => {
       const email="denniskinuthiaw@gmail.com"
       try{
-        const redtkn = await getRefreshToken("denniskinuthiaw@gmail.com")
+        const redtkn = await getRefreshTokenFromRedis("denniskinuthiaw@gmail.com")
         console.log("redis token === ",redtkn)
         if(!redtkn){
           console.log("no token in , get one in firebase ")
