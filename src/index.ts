@@ -1,19 +1,18 @@
-import express, { Express, Request, Response,NextFunction } from 'express';
+import express, { Express, Request, Response} from 'express';
 import dotenv from 'dotenv';
 import auth from './routes/auth'
 import gmail from './routes/gmail'
 import { initFirebase } from './firebase/firebaseInit';
-import { getRefreshTokenFromRedis, testFunction } from './firebase/tokenActions';
 import { initChecks} from './middleware/initialChecks';
 const { createClient } =require('ioredis');
-const admin = require("firebase-admin");
+
    
 const startServer=async()=>
 {
     
     dotenv.config();
     const port = process.env.PORT;
-    const myemail = process.env.MY_EMAIL;
+
 
     const app: Express = express();
 
@@ -25,33 +24,18 @@ const startServer=async()=>
 
 
     //home route , checks if user is authenticated
-   app.get('/', initChecks,
-   async(req: Request, res: Response, next: NextFunction)=>{
+    app.get('/', initChecks,
+    async(req: Request, res: Response)=>{
+    const refreshtoken=req.query.refresh_token 
+    const accesstoken=req.query.access_token
+    const email=req.query.email
+ // const auth2Client=req.query.oauthClient
+    
+    console.log('email ,ref , access', email,refreshtoken,accesstoken)
     res.send("good")
   });
 
-    //home route , checks if user is authenticated
-    app.get('/test', async(req: Request, res: Response) => {
-      const email="denniskinuthiaw@gmail.com"
-      try{
-        const redtkn = await getRefreshTokenFromRedis("denniskinuthiaw@gmail.com")
-        console.log("redis token === ",redtkn)
-        if(!redtkn){
-          console.log("no token in , get one in firebase ")
-          const db = await admin.firestore();
-          const usersCollection = db.collection('users');
-          const fireToken=await usersCollection.doc(email).get()
-          console.log("firetoken in index",fireToken.data())
-          if(!fireToken.data()){
-          res.redirect('/auth/google')
-          }
-        }
-  
-      }catch(err){
-      console.log("redis token err n index=== ",err)
-      }
 
-    })
 
 
     app.use('/auth',auth)

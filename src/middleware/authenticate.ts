@@ -1,13 +1,12 @@
 import  { Request, Response } from 'express';
-import { saveRefreshToRedis } from '../firebase/tokenActions';
+import { saveRefreshToRedis } from '../firebase/redisActions';
 const http = require('http');
 const url = require('url');
 const opn = require('open');
 const destroyer = require('server-destroy');
 const admin = require("firebase-admin");
-
 const {google} = require('googleapis');
-const people = google.people('v1');
+;
 
 
 export const scopes = [
@@ -24,6 +23,7 @@ export const scopes = [
     process.env.CLIENT_SECRET,
     process.env.REDIRECT_URL
   );
+
 let refreshToken;
 google.options({auth: oauth2Client});
   
@@ -50,10 +50,7 @@ export async function authenticate() {
               res.end('Authentication successful! Please return to the console.');
               server.destroy();
               const {tokens} = await oauth2Client.getToken(qs.get('code'));
-
-              
               console.log("tokens obtained ===== ",tokens)
-
               oauth2Client.credentials = tokens;
               
               const oauth2 = await google.oauth2({
@@ -90,7 +87,9 @@ export async function authenticate() {
               // eslint-disable-line require-atomic-updates
               resolve(refreshToken);
             }
-          } catch (e) {
+          } 
+          catch (e) {
+            console.log("error inside authenticate ===== ",e)
             reject(e);
           }
         })
@@ -102,14 +101,7 @@ export async function authenticate() {
     });
   }
 
- export  async function runSample() {
-    // retrieve user profile
-    const res = await people.people.get({
-      resourceName: 'people/me',
-      personFields: 'emailAddresses',
-    });
-    console.log("people gotten ====",res.data);
-  }  
+  
 
 
 
