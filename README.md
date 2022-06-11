@@ -133,3 +133,5 @@ Remember to omit from the above code
  ```
 
  if you're not going to use the emulator  
+
+[googleapis nodejs client official docs](https://github.com/googleapis/google-api-nodejs-client)

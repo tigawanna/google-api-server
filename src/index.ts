@@ -1,7 +1,7 @@
 import express, { Express, Request, Response} from 'express';
 import dotenv from 'dotenv';
 import auth from './routes/auth'
-import gmail from './routes/gmail'
+import api from './routes/api'
 import { initFirebase } from './firebase/firebaseInit';
 import { initChecks} from './middleware/initialChecks';
 const { createClient } =require('ioredis');
@@ -39,7 +39,7 @@ const startServer=async()=>
 
 
     app.use('/auth',auth)
-    app.use('/gmail',gmail)
+    app.use('/api',api)
     
     app.listen(port, () => {
       console.log(`⚡️[server]: Server is running at http://localhost:${port}`);

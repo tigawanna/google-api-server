@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const auth_1 = __importDefault(require("./routes/auth"));
-const gmail_1 = __importDefault(require("./routes/gmail"));
+const api_1 = __importDefault(require("./routes/api"));
 const firebaseInit_1 = require("./firebase/firebaseInit");
 const initialChecks_1 = require("./middleware/initialChecks");
 const { createClient } = require('ioredis');
@@ -26,7 +26,7 @@ const startServer = async () => {
         res.send("good");
     });
     app.use('/auth', auth_1.default);
-    app.use('/gmail', gmail_1.default);
+    app.use('/api', api_1.default);
     app.listen(port, () => {
         console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
     });
